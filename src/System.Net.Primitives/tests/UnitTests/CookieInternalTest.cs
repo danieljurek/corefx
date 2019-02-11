@@ -79,7 +79,7 @@ namespace NetPrimitivesUnitTests
         [InlineData("https://contoso.com/path/subpath", "/path")]
         [InlineData("https://contoso.com/path/subpath/", "/path/subpath")]
         [InlineData("https://contoso.com/path/subpath?query=queryString", "/path")]
-        public void SetCookies_Sets_Rfc6265_Default_Path_From_Url(string url, string expectedPath)
+        public void SetCookies_WithNoHeaderPath_SetsDefaultPathFromUrl(string url, string expectedPath)
         {
             var uri = new Uri(url);
             var cc = new CookieContainer();
@@ -98,7 +98,7 @@ namespace NetPrimitivesUnitTests
         [InlineData("Path=/path/subpath", "/path/subpath")]
         [InlineData("Path=/path", "/path")]
         [InlineData("Path=/path/", "/path/")]
-        public void SetCookies_Sets_Rfc6265_Path_From_Header_Path(string path, string expectedPath)
+        public void SetCookies_WithHeaderPath_SetsPathFromHeader(string path, string expectedPath)
         {
             var uri = new Uri("https://contoso.com/");
             var cc = new CookieContainer();
@@ -111,12 +111,11 @@ namespace NetPrimitivesUnitTests
         // is not ("Default = Rfc2109" in Cookie.cs:20)
         // TODO: Will the Default behavior change to RFC 6265? If not, specify appropriate CookieVariant
         [Fact]
-        public void Rfc6265_DoesNotThrow_When_Header_Path_Differs_From_Url()
+        public void SetCookies_WhenHeaderPathDifferentFromUrl_DoesNotThrow()
         {
             var uri = new Uri("https://contoso.com/some/path");
             var cc = new CookieContainer();
-
-            // Assert.DoesNotThrow
+            
             cc.SetCookies(uri, "name=value; Path=/another/path");
         }
 
@@ -124,7 +123,7 @@ namespace NetPrimitivesUnitTests
         // is not ("Default = Rfc2109" in Cookie.cs:20)
         // TODO: Will the Default behavior change to RFC 6265? If not, specify appropriate CookieVariant
         [Fact]
-        public void Rfc6265_Sends_Appropriate_Cookies_For_Different_Path()
+        public void GetCookies_WithHeaderPathDifferentFromUriPath_ReturnsCookieOnDifferentPath()
         {
             var uri1 = new Uri("https://contoso.com/some/path");
             var cc = new CookieContainer();
