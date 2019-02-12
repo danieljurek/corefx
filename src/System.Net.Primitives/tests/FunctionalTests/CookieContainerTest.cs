@@ -274,7 +274,7 @@ namespace System.Net.Primitives.Functional.Tests
             var cc = new CookieContainer();
             cc.SetCookies(uri1, cookieString);
 
-            var uri2 = new Uri(cookieString);
+            var uri2 = new Uri(url2);
 
             Assert.NotEmpty(cc.GetCookies(uri2));
         }
