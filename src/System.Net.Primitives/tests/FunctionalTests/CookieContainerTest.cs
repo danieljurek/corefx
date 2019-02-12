@@ -203,5 +203,80 @@ namespace System.Net.Primitives.Functional.Tests
                 Assert.Equal(Capacity, domainTable.Count);
             }
         }
+
+        // This assumes that the default cookie behavior is RFC 6265, which it
+        // is not ("Default = Rfc2109" in Cookie.cs:20)
+        // TODO: Will the Default behavior change to RFC 6265? If not, specify appropriate CookieVariant
+        [Theory]
+        [InlineData("https://contoso.com/", "/")]
+        [InlineData("https://contoso.com", "/")]
+        [InlineData("https://contoso.com/path", "/")]
+        [InlineData("https://contoso.com/path/subpath", "/path")]
+        [InlineData("https://contoso.com/path/subpath/", "/path/subpath")]
+        [InlineData("https://contoso.com/path/subpath?query=queryString", "/path")]
+        public void SetCookies_WithNoHeaderPath_SetsDefaultPathFromUrl(string url, string expectedPath)
+        {
+            const string cookieString = "name=value";
+            const string cookieKey = "name";
+            var uri = new Uri(url);
+            var cc = new CookieContainer();
+            cc.SetCookies(uri, cookieString);
+
+            Assert.Equal(expectedPath, cc.GetCookies(uri)[cookieKey].Path);
+        }
+
+        // This assumes that the default cookie behavior is RFC 6265, which it
+        // is not ("Default = Rfc2109" in Cookie.cs:20)
+        // TODO: Will the Default behavior change to RFC 6265? If not, specify appropriate CookieVariant
+        [Theory]
+        [InlineData("/", "/")]
+        [InlineData("", "/")]
+        [InlineData("Path=path", "/")]
+        [InlineData("Path=/path/subpath", "/path/subpath")]
+        [InlineData("Path=/path", "/path")]
+        [InlineData("Path=/path/", "/path/")]
+        public void SetCookies_WithHeaderPath_SetsPathFromHeader(string path, string expectedPath)
+        {
+            const string url = "https://contoso.com/";
+            const string cookieKey = "name";
+            var cookeString = $"name=value; Path={path}";
+            var uri = new Uri(url);
+            var cc = new CookieContainer();
+            cc.SetCookies(uri, cookeString);
+
+            Assert.Equal(expectedPath, cc.GetCookies(uri)[cookieKey].Path);
+        }
+
+        // This assumes that the default cookie behavior is RFC 6265, which it
+        // is not ("Default = Rfc2109" in Cookie.cs:20)
+        // TODO: Will the Default behavior change to RFC 6265? If not, specify appropriate CookieVariant
+        [Fact]
+        public void SetCookies_WhenHeaderPathDifferentFromUrl_DoesNotThrow()
+        {
+            const string url = "https://contoso.com/some/path";
+            const string cookieString = "name=value; Path=/another/path";
+            var uri = new Uri(url);
+            var cc = new CookieContainer();
+            
+            cc.SetCookies(uri, cookieString);
+        }
+
+        // This assumes that the default cookie behavior is RFC 6265, which it
+        // is not ("Default = Rfc2109" in Cookie.cs:20)
+        // TODO: Will the Default behavior change to RFC 6265? If not, specify appropriate CookieVariant
+        [Fact]
+        public void GetCookies_WithHeaderPathDifferentFromUriPath_ReturnsCookieOnDifferentPath()
+        {
+            const string url1 = "https://contoso.com/some/path";
+            const string url2 = "https://contoso.com/another/path";
+            const string cookieString = "name=value; Path=/another/path";
+            var uri1 = new Uri(url1);
+            var cc = new CookieContainer();
+            cc.SetCookies(uri1, cookieString);
+
+            var uri2 = new Uri(cookieString);
+
+            Assert.NotEmpty(cc.GetCookies(uri2));
+        }
     }
 }
